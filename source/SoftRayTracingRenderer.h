@@ -23,7 +23,7 @@ namespace SoftRayTracing
 
 		Color3 skyBox(Vector3 direction);
 
-		Color4 shadeRay(Ray ray);
+		Color3 shadeRay(Ray ray);
 
 		ReferenceCountedPointer<G3D::Texture> m_frameTexture;
 

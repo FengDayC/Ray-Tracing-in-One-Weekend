@@ -15,11 +15,11 @@ namespace SoftRayTracing
 
 		if (!m_frameTexture || m_frameTexture->width() != rd->width() || m_frameTexture->height() != rd->height())
 		{
-			m_frameTexture = Texture::createEmpty("FrameTexture", rd->width(), rd->height(), ImageFormat::RGBA32F());
+			m_frameTexture = Texture::createEmpty("FrameTexture", rd->width(), rd->height(), ImageFormat::RGB32F());
 			camera->SetAspectRatio(rd->width() / (float)rd->height());
 		}
 
-		Array<Color4> frameBuffer;
+		Array<Color3> frameBuffer;
 		Array<Ray> raysBuffer;
 
 		//Fill the frame buffer
@@ -29,20 +29,21 @@ namespace SoftRayTracing
 		int pixelCnt = raysBuffer.size() / raysPerPixel;
 		for (int i = 0, baseRayID = 0; i < pixelCnt; i++, baseRayID+=raysPerPixel)
 		{
-			Color4 result;
+			Color3 result = Color3::zero();
 			bool isHit = false;
 			for (int j = 0; j < raysPerPixel; j++)
 			{
 				Ray ray = raysBuffer[baseRayID + j];
-				result = shadeRay(ray) * weightPerRay;
+				result += shadeRay(ray) * weightPerRay;
 			}
+			result = linearToGamma(result);
 			frameBuffer.append(result);
 			//Color4 uvColor = Color4(0.5f*(ray.direction().x + 1.0f), 0.5f*(ray.direction().y + 1.0f), 0.5f*(ray.direction().z + 1.0f), 1.0f);
 			//frameBuffer.append(uvColor);
 		}
 
 		// Post-process
-		const shared_ptr<PixelTransferBuffer>& ptb = CPUPixelTransferBuffer::fromData(rd->width(), rd->height(), ImageFormat::RGBA32F(), frameBuffer.getCArray());
+		const shared_ptr<PixelTransferBuffer>& ptb = CPUPixelTransferBuffer::fromData(rd->width(), rd->height(), ImageFormat::RGB32F(), frameBuffer.getCArray());
 		m_frameTexture->update(ptb);
 
 		rd->push2D(); {
@@ -74,7 +75,7 @@ namespace SoftRayTracing
 		return lerp(Color3(1.0, 1.0f, 1.0), Color3(0.5, 0.7, 1.0), 0.5f * direction.y + 0.5f);
 	}
 
-	Color4 SoftRayTracingRenderer::shadeRay(Ray ray)
+	Color3 SoftRayTracingRenderer::shadeRay(Ray ray)
 	{
 		Color3 weight = Color3::one();
 		Color3 result = Color3(0.0f, 0.0f, 0.0f);
@@ -96,7 +97,7 @@ namespace SoftRayTracing
 		}
 		result *= weight;
 		
-		return Color4(result, 1.0f);
+		return result;
 	}
 }
 

@@ -72,7 +72,7 @@ void App::onInit() {
     
     showRenderingStats      = true;
 
-    m_softRayTracingRenderer = SoftRayTracing::SoftRayTracingRenderer::create(1, 8);
+    m_softRayTracingRenderer = SoftRayTracing::SoftRayTracingRenderer::create(8, 8);
     m_camera = SoftRayTracing::PerspectiveCamera::create();
 
     m_sceneObjects.append(SoftRayTracing::Sphere::create(Vector3(0, 0, -3), 1.0f));
