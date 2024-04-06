@@ -1,5 +1,8 @@
 /** \file App.cpp */
 #include "App.h"
+#include "RayTraceGeometry.h"
+#include "Camera.h"
+#include "SoftRayTracingRenderer.h"
 
 // Tells C++ to invoke command-line main() function even on OS X and Win32.
 G3D_START_AT_MAIN();
@@ -21,13 +24,8 @@ int main(int argc, const char* argv[]) {
         settings.window.width           = 1920;
         settings.window.height          = 1080;
     } else {
-        settings.window.height          = int(OSWindow::primaryDisplayWindowSize().y * 0.95f); 
-        // Constrain ultra widescreen aspect ratios
-        settings.window.width           = min(settings.window.height * 1920 / 1080, int(OSWindow::primaryDisplayWindowSize().x * 0.95f));
-
-        // Make even
-        settings.window.width  -= settings.window.width & 1;
-        settings.window.height -= settings.window.height & 1;
+        settings.window.width = 1024;
+        settings.window.height = 768;
     }
     settings.window.resizable           = ! settings.window.fullScreen;
     settings.window.framed              = ! settings.window.fullScreen;
@@ -58,6 +56,8 @@ int main(int argc, const char* argv[]) {
     settings.screenCapture.includeG3DRevision = false;
     settings.screenCapture.filenamePrefix = "_";
 
+    settings.useDeveloperTools = false;
+
     return App(settings).run();
 }
 
@@ -72,6 +72,11 @@ void App::onInit() {
     
     showRenderingStats      = true;
 
+    m_softRayTracingRenderer = SoftRayTracing::SoftRayTracingRenderer::create(4);
+    m_camera = SoftRayTracing::PerspectiveCamera::create();
+
+    m_sceneObjects.append(SoftRayTracing::Sphere::create(Vector3(0, 0, -3), 1.0f));
+
     makeGUI();
 }
 
@@ -80,10 +85,16 @@ void App::makeGUI() {
 }
 
 
-void App::onGraphics3D(RenderDevice* rd, Array<shared_ptr<Surface> >& allSurfaces) {
+void App::onGraphics3D(RenderDevice* rd, Array<shared_ptr<Surface> >& allSurfaces) 
+{
+    GApp::onGraphics3D(rd, allSurfaces);
+
+	m_softRayTracingRenderer->render(rd, m_camera, m_sceneObjects);
 }
 
 
 void App::onGraphics2D(RenderDevice* rd, Array<shared_ptr<Surface2D> >& posed2D) {
     Surface2D::sortAndRender(rd, posed2D);
 }
+    
+

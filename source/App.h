@@ -7,6 +7,13 @@
 #pragma once
 #include <G3D/G3D.h>
 
+namespace SoftRayTracing
+{
+	class Hittable;
+	class Camera;
+	class SoftRayTracingRenderer;
+}
+
 /** \brief Application framework. */
 class App : public GApp {
 protected:
@@ -22,4 +29,11 @@ public:
 
     virtual void onGraphics3D(RenderDevice* rd, Array<shared_ptr<Surface> >& surface3D) override;
     virtual void onGraphics2D(RenderDevice* rd, Array<shared_ptr<Surface2D> >& surface2D) override;
+		
+private:
+    ReferenceCountedPointer<SoftRayTracing::SoftRayTracingRenderer> m_softRayTracingRenderer;
+
+    ReferenceCountedPointer<SoftRayTracing::Camera> m_camera;
+
+    Array<ReferenceCountedPointer<SoftRayTracing::Hittable>> m_sceneObjects;
 };
