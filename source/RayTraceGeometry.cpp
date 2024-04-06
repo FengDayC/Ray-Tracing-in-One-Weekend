@@ -69,6 +69,13 @@ namespace SoftRayTracing
 		ray = Ray::fromOriginAndDirection(rayOrigin.xyz(), rayDirection.xyz(), ray.minDistance(), ray.maxDistance());
 	}
 
+	void Transformable::inverse_transform_hit(HitInfo& hitInfo) const
+	{
+		Matrix4 rotationMatrix = rotation.toRotationMatrix();
+		hitInfo.point = position + (rotationMatrix * Vector4(hitInfo.point, 1.0f)).xyz();
+		hitInfo.normal = (rotationMatrix * Vector4(hitInfo.normal, 0.0f)).xyz();
+	}
+
 	
 	Hittable::Hittable(Vector3 position, Quat rotation, Vector3 scale)
 		: Transformable(position, rotation, scale)
@@ -77,21 +84,22 @@ namespace SoftRayTracing
 
 	bool Sphere::hit(Ray ray, float ray_min, float ray_max, HitInfo& hitInfo) const
 	{
-		Vector3 oc = ray.origin() - position;
-		float a = ray.direction().dot(ray.direction());
-		float b = 2.0f * oc.dot(ray.direction());
-		float c = oc.dot(oc) - radius * radius;
-		float discriminant = b * b - 4 * a * c;
-		if (discriminant < 0)
+		transform_ray(ray);
+		float a = ray.direction().squaredMagnitude();
+		float b = 2.0f * dot(ray.origin(), ray.direction());
+		float c = ray.origin().squaredMagnitude() - radius * radius;
+		float t = (-b - sqrt(b * b - 4 * a * c)) / (2 * a);
+		if (t < ray_min || t > ray_max)
 		{
 			hitInfo = missInfo;
 			return false;
 		}
 		else
 		{
-			hitInfo.t = (-b - sqrt(discriminant)) / (2.0f * a);
-			hitInfo.point = ray_at(ray, hitInfo.t);
-			hitInfo.normal = (hitInfo.point - position) / radius;
+			hitInfo.t = t;
+			hitInfo.point = ray_at(ray, t);
+			hitInfo.normal = hitInfo.point / radius;
+			inverse_transform_hit(hitInfo);
 			return true;
 		}
 	}
@@ -103,6 +111,44 @@ namespace SoftRayTracing
 
 	Sphere::Sphere(Vector3 center, float radius)
 		: Hittable(center, Quat(Vector3::zero(),1.0f), Vector3::one()), radius(radius)
+	{
+	}
+
+	bool Plane::hit(Ray ray, float ray_min, float ray_max, HitInfo& hitInfo) const
+	{
+		transform_ray(ray);
+		float t = - ray.origin().y / ray.direction().y;
+		if (t < ray_min || t > ray_max)
+		{
+			hitInfo = missInfo;
+			return false;
+		}
+		else
+		{
+			Vector3 point = ray_at(ray, t);
+			if (abs(point.x) < scale.x && abs(point.z) < scale.z)
+			{
+				hitInfo.t = t;
+				hitInfo.point = point;
+				hitInfo.normal = Vector3(0.0f, 1.0f, 0.0f);
+				inverse_transform_hit(hitInfo);
+				return true;
+			}
+			else
+			{
+				hitInfo = missInfo;
+				return false;
+			}
+		}
+	}
+
+	ReferenceCountedPointer<Plane> Plane::create(Vector3 position, Quat rotation, Vector2 size)
+	{
+		return createShared<Plane>(position, rotation, size);
+	}
+
+	Plane::Plane(Vector3 position, Quat rotation, Vector2 size)
+		: Hittable(position, rotation, Vector3(size.x, 0.0f, size.y))
 	{
 	}
 

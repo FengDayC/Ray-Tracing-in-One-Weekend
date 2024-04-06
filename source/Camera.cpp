@@ -21,7 +21,7 @@ namespace SoftRayTracing
 		Vector2 deltaSize = Vector2(2.0f / width, 2.0f / height);
 		for(int j = 0; j < height; j++)
 		{
-			float v = 2.0f * ((j + 0.5f) / height) - 1.0f;
+			float v = 2.0f * ((height - j + 0.5f) / height) - 1.0f;
 			for (int i = 0; i < width; i++)
 			{
 				float u = 2.0f * ((i + 0.5f) / width) - 1.0f;
