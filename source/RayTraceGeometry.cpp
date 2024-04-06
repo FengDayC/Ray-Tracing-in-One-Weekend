@@ -77,8 +77,8 @@ namespace SoftRayTracing
 	}
 
 	
-	Hittable::Hittable(Vector3 position, Quat rotation, Vector3 scale)
-		: Transformable(position, rotation, scale)
+	Hittable::Hittable(Vector3 position, Quat rotation, Vector3 scale, Color3 diffuse)
+		: Transformable(position, rotation, scale), Shadable(diffuse)
 	{
 	}
 
@@ -99,18 +99,19 @@ namespace SoftRayTracing
 			hitInfo.t = t;
 			hitInfo.point = ray_at(ray, t);
 			hitInfo.normal = hitInfo.point / radius;
+			hitInfo.diffuse = diffuse;
 			inverse_transform_hit(hitInfo);
 			return true;
 		}
 	}
 
-	ReferenceCountedPointer<Sphere> Sphere::create(Vector3 center, float radius)
+	ReferenceCountedPointer<Sphere> Sphere::create(Vector3 center, float radius, Color3 diffuse)
 	{
-		return createShared<Sphere>(center, radius);
+		return createShared<Sphere>(center, radius, diffuse);
 	}
 
-	Sphere::Sphere(Vector3 center, float radius)
-		: Hittable(center, Quat(Vector3::zero(),1.0f), Vector3::one()), radius(radius)
+	Sphere::Sphere(Vector3 center, float radius, Color3 diffuse)
+		: Hittable(center, Quat(Vector3::zero(),1.0f), Vector3::one(), diffuse), radius(radius)
 	{
 	}
 
@@ -131,6 +132,7 @@ namespace SoftRayTracing
 				hitInfo.t = t;
 				hitInfo.point = point;
 				hitInfo.normal = Vector3(0.0f, 1.0f, 0.0f);
+				hitInfo.diffuse = diffuse;
 				inverse_transform_hit(hitInfo);
 				return true;
 			}
@@ -142,14 +144,35 @@ namespace SoftRayTracing
 		}
 	}
 
-	ReferenceCountedPointer<Plane> Plane::create(Vector3 position, Quat rotation, Vector2 size)
+	ReferenceCountedPointer<Plane> Plane::create(Vector3 position, Quat rotation, Vector2 size, Color3 diffuse)
 	{
-		return createShared<Plane>(position, rotation, size);
+		return createShared<Plane>(position, rotation, size, diffuse);
 	}
 
-	Plane::Plane(Vector3 position, Quat rotation, Vector2 size)
-		: Hittable(position, rotation, Vector3(size.x, 0.0f, size.y))
+	Plane::Plane(Vector3 position, Quat rotation, Vector2 size, Color3 diffuse)
+		: Hittable(position, rotation, Vector3(size.x, 0.0f, size.y), diffuse)
 	{
+	}
+
+	Color3 Shadable::shade()
+	{
+		return Color3();
+	}
+
+	void Shadable::setDiffuse(Color3 diffuse)
+	{
+		this->diffuse = diffuse;
+	}
+
+	Color3 Shadable::getDiffuse() const
+	{
+		return diffuse;
+	}
+
+	Shadable::Shadable(Color3 diffuse)
+		: diffuse(diffuse)
+	{
+
 	}
 
 }
