@@ -60,7 +60,7 @@ namespace SoftRayTracing
 		for (auto object : m_objectsCache)
 		{
 			HitInfo tempHitInfo;
-			if (object->hit(ray, 0.00000001f, 1000.0f, tempHitInfo))
+			if (object->hit(ray, 0.001f, 1000.0f, tempHitInfo))
 			{
 				if (tempHitInfo.t < hitInfo.t)
 				{
@@ -72,12 +72,12 @@ namespace SoftRayTracing
 
 	Color3 SoftRayTracingRenderer::skyBox(Vector3 direction)
 	{
-		return lerp(Color3(1.0, 1.0f, 1.0), Color3(0.5, 0.7, 1.0), 0.5f * direction.y + 0.5f);
+		return lerp(Color3(0.5, 0.7, 1.0), Color3(1.0, 1.0f, 1.0), 0.5f * direction.y + 0.5f);
 	}
 
 	Color3 SoftRayTracingRenderer::shadeRay(Ray ray)
 	{
-		Color3 weight = Color3::one();
+		Color3 attenuation = Color3::one();
 		Color3 result = Color3(0.0f, 0.0f, 0.0f);
 		for (int i = 0; i < maxBounceTime; i++)
 		{
@@ -85,17 +85,17 @@ namespace SoftRayTracing
 			hit(ray, hitInfo);
 			if (hitInfo.t < inf())
 			{
-				weight = weight * hitInfo.diffuse;
 				//ray = Ray::fromOriginAndDirection(hitInfo.point, semisphereUniformRandomUnit(hitInfo.normal));
-				ray = Ray::fromOriginAndDirection(hitInfo.point, (hitInfo.normal + uniformRandomUnit()).direction());
+				auto& material = hitInfo.material;
+				material->scatter(hitInfo, ray, attenuation);
 			}
 			else
 			{
-				result = skyBox(ray.direction()) * weight;
+				result = skyBox(ray.direction());
 				break;
 			}
 		}
-		result *= weight;
+		result *= attenuation;
 		
 		return result;
 	}

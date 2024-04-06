@@ -3,6 +3,7 @@
 #include "RayTraceGeometry.h"
 #include "Camera.h"
 #include "SoftRayTracingRenderer.h"
+#include "Material.h"
 
 // Tells C++ to invoke command-line main() function even on OS X and Win32.
 G3D_START_AT_MAIN();
@@ -73,10 +74,11 @@ void App::onInit() {
     showRenderingStats      = true;
 
     m_softRayTracingRenderer = SoftRayTracing::SoftRayTracingRenderer::create(8, 8);
-    m_camera = SoftRayTracing::PerspectiveCamera::create();
+    m_camera = SoftRayTracing::PerspectiveCamera::create(Vector3(0, 0, 1.5f));
 
     m_sceneObjects.append(SoftRayTracing::Sphere::create(Vector3(0, 0, -3), 1.0f));
     m_sceneObjects.append(SoftRayTracing::Plane::create(Vector3(0, -1.0f, -2), Quat::fromAxisAngleRotation(Vector3(0, 1, 0), toRadians(0.0f)), Vector2::one() * 2.0f));
+    m_sceneObjects.append(SoftRayTracing::Sphere::create(Vector3(-2, 0, -3), 1.0f, SoftRayTracing::s_orangeMetal));
 
     makeGUI();
 }
