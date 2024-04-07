@@ -73,12 +73,13 @@ void App::onInit() {
     
     showRenderingStats      = true;
 
-    m_softRayTracingRenderer = SoftRayTracing::SoftRayTracingRenderer::create(8, 8);
-    m_camera = SoftRayTracing::PerspectiveCamera::create(Vector3(0, 0, 1.5f));
+    m_softRayTracingRenderer = SoftRayTracing::SoftRayTracingRenderer::create(4, 16);
+    m_camera = SoftRayTracing::PerspectiveCamera::create(Vector3(2.0f, 0, 1.5f), Quat::fromAxisAngleRotation(Vector3(0.0f, 1.0f, 0.0f), toRadians(30.0f)));
 
     m_sceneObjects.append(SoftRayTracing::Sphere::create(Vector3(0, 0, -3), 1.0f));
-    m_sceneObjects.append(SoftRayTracing::Plane::create(Vector3(0, -1.0f, -2), Quat::fromAxisAngleRotation(Vector3(0, 1, 0), toRadians(0.0f)), Vector2::one() * 2.0f));
+    m_sceneObjects.append(SoftRayTracing::Plane::create(Vector3(0, -1.0f, -3), Quat::fromAxisAngleRotation(Vector3(0, 1, 0), toRadians(0.0f)), Vector2::one() * 4.0f));
     m_sceneObjects.append(SoftRayTracing::Sphere::create(Vector3(-2, 0, -3), 1.0f, SoftRayTracing::s_orangeMetal));
+    m_sceneObjects.append(SoftRayTracing::Sphere::create(Vector3(2, 0, -3), 1.0f, SoftRayTracing::s_transparentGlass));
 
     makeGUI();
 }

@@ -11,6 +11,7 @@ namespace SoftRayTracing
 		float t;
 		Vector3 normal;
 		Vector3 point;
+		bool frontFace;
 		ReferenceCountedPointer<Material> material;
 	};
 

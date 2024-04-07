@@ -49,12 +49,17 @@ namespace SoftRayTracing
 		virtual bool scatter(const HitInfo& hitInfo, Ray& ray, Color3& attenuation) const override;
 
 	public:
-		static ReferenceCountedPointer<Dielectric> create(const Color3& albedo);
+		static ReferenceCountedPointer<Dielectric> create(float ir);
 
 		~Dielectric() = default;
 
 	protected:
 		Dielectric(float ir);
+
+		Vector3 refract(const Vector3& v, const Vector3& n, float niOverNt) const;
+
+		// Use Schlick's approximation for reflectance.
+		float reflectance(float cosine, float ref_idx) const;
 
 		float m_ir;
 	};
@@ -62,4 +67,6 @@ namespace SoftRayTracing
 	static const ReferenceCountedPointer<Material> s_greyLambertian = dynamic_pointer_cast<Lambertian>(Lambertian::create(Color3::gray()));
 
 	static const ReferenceCountedPointer<Material> s_orangeMetal = dynamic_pointer_cast<Metal>(Metal::create(Color3::orange()));
+
+	static const ReferenceCountedPointer<Material> s_transparentGlass = dynamic_pointer_cast<Dielectric>(Dielectric::create(1.5f));
 }

@@ -57,4 +57,6 @@ namespace SoftRayTracing
 	{
 		return Color3(gammaToLinear(color.r), gammaToLinear(color.g), gammaToLinear(color.b));
 	}
+
+
 }

@@ -87,22 +87,35 @@ namespace SoftRayTracing
 		transform_ray(ray);
 		float a = ray.direction().squaredMagnitude();
 		float b = 2.0f * dot(ray.origin(), ray.direction());
-		float c = ray.origin().squaredMagnitude() - m_radius * m_radius;
-		float t = (-b - sqrt(b * b - 4 * a * c)) / (2 * a);
-		if (t < ray_min || t > ray_max)
+		float c = ray.origin().squaredMagnitude() - square(m_radius);
+		float discriminant = b * b - 4 * a * c;
+		float t;
+		if (discriminant < 0)
 		{
 			hitInfo = missInfo;
 			return false;
 		}
+
+		if (c < 0)
+		{
+			t = (-b + sqrt(discriminant)) / (2.0f * a);
+		}
 		else
 		{
-			hitInfo.t = t;
-			hitInfo.point = ray_at(ray, t);
-			hitInfo.normal = hitInfo.point / m_radius;
-			hitInfo.material = m_material;
-			inverse_transform_hit(hitInfo);
-			return true;
+			t = (-b - sqrt(discriminant)) / (2.0f * a);
 		}
+		if (t<ray_min || t > ray_max)
+		{
+			hitInfo = missInfo;
+			return false;
+		}
+		hitInfo.t = t;
+		hitInfo.point = ray_at(ray, t);
+		hitInfo.material = m_material;
+		hitInfo.normal = hitInfo.point / m_radius;
+		hitInfo.frontFace = dot(ray.direction(), hitInfo.normal) < 0;
+		inverse_transform_hit(hitInfo);
+		return true;
 	}
 
 	ReferenceCountedPointer<Sphere> Sphere::create(Vector3 center, float radius, ReferenceCountedPointer<Material> material)
@@ -131,8 +144,9 @@ namespace SoftRayTracing
 			{
 				hitInfo.t = t;
 				hitInfo.point = point;
-				hitInfo.normal = Vector3(0.0f, 1.0f, 0.0f);
 				hitInfo.material = m_material;
+				hitInfo.frontFace = ray.direction().y < 0;
+				hitInfo.normal = Vector3(0.0f, 1.0f, 0.0f);
 				inverse_transform_hit(hitInfo);
 				return true;
 			}
